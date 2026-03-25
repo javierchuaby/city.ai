@@ -1,4 +1,5 @@
-import React, { useState } from "react";
+import { useState } from "react";
+import { useAppContext } from "../context/AppContext";
 import Button from "../components/ui/Button";
 import Input from "../components/ui/Input";
 
@@ -13,12 +14,9 @@ const REGIONS = [
 /**
  * Signup View Component
  * Handles the registration multistep flow.
- * 
- * @param {Object} props
- * @param {Function} props.onBack - Go back to landing.
- * @param {Function} props.onComplete - Finalize signup.
  */
-export default function Signup({ onBack, onComplete }) {
+export default function Signup() {
+  const { setScreen, setUser } = useAppContext();
   const [step, setStep] = useState(1);
   const [form, setForm] = useState({ name: "", email: "", dob: "", pass: "", pass2: "", region: "" });
   const [checks, setChecks] = useState({ chk1: false, chk2: false, chk3: false });
@@ -43,7 +41,8 @@ export default function Signup({ onBack, onComplete }) {
     if (step === 4) {
       if (!checks.chk1) return setError("Please agree to the Terms of Service.");
       if (!checks.chk3) return setError("You must be 18 or older.");
-      onComplete(form);
+      setUser(prev => ({ ...prev, ...form }));
+      setScreen("onboarding");
       return;
     }
     setStep(s => s + 1);
@@ -52,7 +51,7 @@ export default function Signup({ onBack, onComplete }) {
   return (
     <div id="signup" className="screen active">
       <div className="signup-wrap">
-        <button className="signup-back" onClick={onBack}>← Back</button>
+        <button className="signup-back" onClick={() => setScreen("landing")}>← Back</button>
         <div className="signup-logo">
           <span className="signup-logo-city">city<span className="signup-logo-dot">.</span></span>
           <span className="signup-logo-ai">ai</span>

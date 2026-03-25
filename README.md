@@ -117,21 +117,25 @@ end;
 $$;
 ```
 
-### 2. Python Setup
-1. Create and activate a virtual environment:
+### 2. Python Setup (New Location)
+1. Navigate to the scripts directory:
+   ```bash
+   cd scripts
+   ```
+2. Create and activate a virtual environment:
    ```bash
    python -m venv venv
    source venv/bin/activate  # On Windows: venv\Scripts\activate
    ```
-2. Install dependencies:
+3. Install dependencies:
    ```bash
    pip install -r requirements.txt
    ```
 
 ### 3. Execution
-Run the scraper to populate your database with local intel:
+From the **root** directory, run the scraper:
 ```bash
-python scraper.py
+python scripts/scraper.py
 ```
 *Note: The scraper is configured with rate limiting (15s delay between batches) to respect Gemini Free Tier limits.*
 
@@ -149,9 +153,10 @@ The project is designed to be deployed on **Vercel**:
 
 ## 📂 Project Structure
 - `api/chat.js`: Vercel Serverless Function handling Gemini orchestration and Supabase RAG logic.
-- `scraper.py`: Python crawler for harvesting and embedding community intel.
+- `scripts/scraper.py`: Python crawler for harvesting and embedding community intel.
+- `src/features/`: Complex UI modules (Chat, Sidebar).
+- `src/views/`: Full-page components (Landing, Signup, Onboarding).
 - `src/services/aiService.js`: Thin frontend wrapper for backend intelligence.
 - `src/App.jsx`: Main application state and UI orchestration.
-- `src/index.css`: Design system and premium component styling.
+- `archive/`: Legacy files and prototypes.
 - `package.json`: Project manifest and dependencies.
-- `vercel.json`: Vercel configuration for API routing.

@@ -1,14 +1,12 @@
-import React from "react";
+import { useAppContext } from "../context/AppContext";
 import Button from "../components/ui/Button";
 
 /**
  * Landing View Component
  * The first screen users see.
- * 
- * @param {Object} props
- * @param {Function} props.onAction - Handler to navigate to signup or demo mode.
  */
-export default function Landing({ onAction }) {
+export default function Landing() {
+  const { handleLandingAction } = useAppContext();
   return (
     <div id="landing" className="screen active">
       <div className="landing-bg"></div>
@@ -35,8 +33,8 @@ export default function Landing({ onAction }) {
           <div className="city-pill">🇬🇪 Tbilisi</div>
         </div>
         <div className="landing-btns">
-          <Button variant="primary" onClick={() => onAction("signup")}>Create Account</Button>
-          <Button variant="ghost" onClick={() => onAction("demo")}>View Demo</Button>
+          <Button variant="primary" onClick={() => handleLandingAction("signup")}>Create Account</Button>
+          <Button variant="ghost" onClick={() => handleLandingAction("demo")}>View Demo</Button>
         </div>
       </div>
     </div>

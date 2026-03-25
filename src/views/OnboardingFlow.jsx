@@ -1,4 +1,5 @@
-import React, { useState } from "react";
+import { useState } from "react";
+import { useAppContext } from "../context/AppContext";
 import Button from "../components/ui/Button";
 
 const OB_Q1 = [
@@ -24,17 +25,18 @@ const OB_Q4 = [
 /**
  * OnboardingFlow Component
  * Multi-step setup for user preferences.
- * 
- * @param {Object} props
- * @param {Function} props.onComplete - Finalize onboarding.
  */
-export default function OnboardingFlow({ onComplete }) {
+export default function OnboardingFlow() {
+  const { setScreen, setUser } = useAppContext();
   const [step, setStep] = useState(1);
   const [answers, setAnswers] = useState({ travelStyle: "", interests: [], budget: "", context: "" });
 
   const next = () => {
     if (step < 4) setStep(step + 1);
-    else onComplete(answers);
+    else {
+      setUser(prev => ({ ...prev, ...answers }));
+      setScreen("app");
+    }
   };
 
   const toggleInterest = (interest) => {

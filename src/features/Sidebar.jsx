@@ -1,20 +1,17 @@
 import React from "react";
 import Button from "../components/ui/Button";
 import PointsWidget from "../components/ui/PointsWidget";
+import { useAppContext } from "../context/AppContext";
 
 /**
  * Sidebar Component
  * Left-side navigation with profile, categories, and points.
  * 
  * @param {Object} props
- * @param {Object} props.user - Current user object.
- * @param {string} props.category - Current active category ID.
- * @param {Function} props.setCategory - Category update handler.
- * @param {number} props.points - Current points.
  * @param {Function} props.onNewChat - Reset conversation handler.
- * @param {Function} props.onDevToggle - Dev mode toggle handler.
  */
-export default function Sidebar({ user, category, setCategory, points, onNewChat, onDevToggle, onReset }) {
+export default function Sidebar({ onNewChat }) {
+  const { user, category, setCategory, points, setIsDev, logout } = useAppContext();
   const CATS = [
     { id: "all", icon: "⚡", label: "All Intel", count: "" }, 
     { id: "food", icon: "🍜", label: "Food & Hawkers", count: "1.2k" },
@@ -65,7 +62,7 @@ export default function Sidebar({ user, category, setCategory, points, onNewChat
           + New Conversation
         </Button>
         <div 
-          onClick={() => onDevToggle?.()}
+          onClick={() => setIsDev(true)}
           style={{ 
             fontFamily: "var(--fm)", 
             fontSize: "9px", 
@@ -80,7 +77,7 @@ export default function Sidebar({ user, category, setCategory, points, onNewChat
           Open Sandbox 🛠️
         </div>
         <div 
-          onClick={onReset}
+          onClick={logout}
           style={{ 
             fontFamily: "var(--fm)", 
             fontSize: "9px", 
