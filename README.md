@@ -157,7 +157,6 @@ The project is designed to be deployed on **Vercel**:
 ## 📂 Project Structure
 
 ```text
-.
 ├── api/                # Vercel Serverless Functions
 │   ├── chat.js         # AI Orchestration & RAG retrieval
 │   └── utils/          # RAG, JSON parsing & prompt logic
