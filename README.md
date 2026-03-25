@@ -6,8 +6,8 @@ city.ai is a next-generation hyperlocal intelligence agent designed specifically
 To provide travelers and residents with "the real local intelligence" — moving beyond Google Search results to offer specific place recommendations, hawker stall numbers, SGD pricing, and MRT-relative context.
 
 ## 🛠️ Technical Stack
-- **Frontend**: React 18
-- **Build Tool**: Vite (Native ESM)
+- **Frontend**: React 19
+- **Build Tool**: Vite 8 (Native ESM)
 - **Database**: Supabase with `pgvector` for similarity search
 - **AI Models**: 
   - **Chat**: Google Gemini 2.5 Flash
@@ -19,6 +19,7 @@ To provide travelers and residents with "the real local intelligence" — moving
 - **Reddit Community Intel**: Aggregates signals and "hidden gem" tips from verified local subreddits.
 - **Trust & Freshness Metrics**: Every recommendation includes a trust score and a "freshness" timestamp to ensure reliability.
 - **Contradiction-Aware UI**: Automatically highlights conflicting community reports, allowing users to make informed decisions.
+- **Reputation & Points System**: Gamified "intel contribution" points that track user engagement and verified tips.
 - **Personalized Onboarding**: Tailors results based on travel style, budget range, and specific interests.
 
 ## 🏁 Getting Started
@@ -132,12 +133,13 @@ $$;
    pip install -r requirements.txt
    ```
 
-### 3. Execution
-From the **root** directory, run the scraper:
+### 3. Execution (Recommended)
+From the **root** directory, run the scraper via the `npm` script:
 ```bash
-python scripts/scraper.py
+npm run scraper
 ```
-*Note: The scraper is configured with rate limiting (15s delay between batches) to respect Gemini Free Tier limits.*
+
+*Note: This uses the virtual environment at `scripts/venv` to ensure all dependencies are correct. The scraper is configured with rate limiting (15s delay between batches) to respect Gemini Free Tier limits.*
 
 ---
 
@@ -146,17 +148,30 @@ python scripts/scraper.py
 The project is designed to be deployed on **Vercel**:
 
 1. Link your project: `vercel link`
-2. Push your environment variables: `vercel env pull`
-3. Deploy to production: `vercel --prod`
+2. Configure variables: Add `AI_API_KEY`, `GEMINI_API_KEY`, etc., to your Vercel Dashboard.
+3. Sync local env (optional): `vercel env pull .env`
+4. Deploy to production: `vercel --prod`
 
 ---
 
 ## 📂 Project Structure
-- `api/chat.js`: Vercel Serverless Function handling Gemini orchestration and Supabase RAG logic.
-- `scripts/scraper.py`: Python crawler for harvesting and embedding community intel.
-- `src/features/`: Complex UI modules (Chat, Sidebar).
-- `src/views/`: Full-page components (Landing, Signup, Onboarding).
-- `src/services/aiService.js`: Thin frontend wrapper for backend intelligence.
-- `src/App.jsx`: Main application state and UI orchestration.
-- `archive/`: Legacy files and prototypes.
-- `package.json`: Project manifest and dependencies.
+
+```text
+.
+├── api/                # Vercel Serverless Functions
+│   ├── chat.js         # AI Orchestration & RAG retrieval
+│   └── utils/          # RAG, JSON parsing & prompt logic
+├── scripts/            # RAG Pipeline Tools
+│   ├── scraper.py      # Reddit crawler & embedding injector
+│   └── requirements.txt
+├── src/
+│   ├── components/ui/  # Shared design system components
+│   ├── context/        # State context & providers
+│   ├── features/       # Complex UI modules (Chat, Sidebar)
+│   ├── hooks/          # Custom React hooks (useChat, useAppContext)
+│   ├── views/          # Full-page components (Landing, Onboarding)
+│   ├── App.jsx         # Main UI orchestration
+│   └── main.jsx        # Entry point
+├── vercel.json         # Vercel deployment config
+└── package.json        # Project dependencies
+```

@@ -1,13 +1,12 @@
-import React, { createContext, useContext, useState, useEffect } from "react";
-
-const AppContext = createContext();
+import React, { useState, useEffect } from "react";
+import { AppContext } from "./state";
 
 export const AppProvider = ({ children }) => {
   // Navigation & High-level state
   const [screen, setScreen] = useState(() => {
     try {
       return localStorage.getItem("cityai_screen") || "landing";
-    } catch (e) {
+    } catch {
       return "landing";
     }
   });
@@ -21,7 +20,7 @@ export const AppProvider = ({ children }) => {
         name: "", email: "", dob: "", region: "",
         travelStyle: "", interests: [], budget: "", context: ""
       };
-    } catch (e) {
+    } catch {
       return {
         name: "", email: "", dob: "", region: "",
         travelStyle: "", interests: [], budget: "", context: ""
@@ -76,12 +75,4 @@ export const AppProvider = ({ children }) => {
   };
 
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>;
-};
-
-export const useAppContext = () => {
-  const context = useContext(AppContext);
-  if (!context) {
-    throw new Error("useAppContext must be used within an AppProvider");
-  }
-  return context;
 };

@@ -1,6 +1,6 @@
 import React, { useRef, useEffect } from "react";
 import AICard from "../components/ui/AICard";
-import { useAppContext } from "../context/AppContext";
+import { useAppContext } from "../hooks/useAppContext";
 import WelcomeState from "./chat/WelcomeState";
 import ChatInput from "./chat/ChatInput";
 

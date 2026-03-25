@@ -1,7 +1,7 @@
 import React from "react";
 import Button from "../components/ui/Button";
 import PointsWidget from "../components/ui/PointsWidget";
-import { useAppContext } from "../context/AppContext";
+import { useAppContext } from "../hooks/useAppContext";
 
 /**
  * Sidebar Component

@@ -27,7 +27,7 @@ function formatComplexBlock(block) {
   const result = [];
   let currentList = null;
 
-  lines.forEach((line, idx) => {
+  lines.forEach((line) => {
     const trimmed = line.trim();
     // Match bullet points like "- item" or "* item"
     const listMatch = line.match(/^[\s]*[-*] (.*)/);

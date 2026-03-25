@@ -6,7 +6,7 @@ import Sidebar from "./features/Sidebar";
 import ChatContainer from "./features/ChatContainer";
 import ComponentLibrary from "./views/ComponentLibrary";
 
-import { useAppContext } from "./context/AppContext";
+import { useAppContext } from "./hooks/useAppContext";
 import useChat from "./hooks/useChat";
 
 /**
