@@ -3,31 +3,88 @@ import React, { useState } from "react";
 /**
  * Helpers for formatting AI responses.
  */
+/**
+ * Helpers for formatting AI responses.
+ */
+
+function formatInline(text) {
+  if (!text) return null;
+  // Handle bold (**text**) and code snippets (`code`)
+  const parts = text.split(/(\*\*[^*]+\*\*|`[^`]+`)/g);
+  return parts.map((part, i) => {
+    const boldMatch = part.match(/^\*\*(.*)\*\*$/);
+    if (boldMatch) return <strong key={i}>{boldMatch[1]}</strong>;
+
+    const codeMatch = part.match(/^`(.*)`$/);
+    if (codeMatch) return <code key={i} className="inline-code">{codeMatch[1]}</code>;
+
+    return part;
+  });
+}
+
+function formatComplexBlock(block) {
+  const lines = block.split('\n');
+  const result = [];
+  let currentList = null;
+
+  lines.forEach((line, idx) => {
+    const trimmed = line.trim();
+    // Match bullet points like "- item" or "* item"
+    const listMatch = line.match(/^[\s]*[-*] (.*)/);
+    
+    if (listMatch) {
+      if (!currentList) {
+        currentList = { type: 'ul', items: [] };
+        result.push(currentList);
+      }
+      currentList.items.push(listMatch[1]);
+    } else if (trimmed === "") {
+      currentList = null;
+    } else {
+      currentList = null;
+      result.push({ type: 'text', content: line });
+    }
+  });
+
+  return result.map((item, i) => {
+    if (item.type === 'ul') {
+      return (
+        <ul key={i} className="ai-list">
+          {item.items.map((li, j) => <li key={j}>{formatInline(li)}</li>)}
+        </ul>
+      );
+    }
+    return <p key={i} className="ai-para">{formatInline(item.content)}</p>;
+  });
+}
+
 function formatAnswer(text) {
   if (!text) return null;
+  
+  // Split by specific tag blocks while preserving them
   const blocks = text.split(/(\\n\\n|\n\n|\[TIP:[^\]]+\]|\[WARN:[^\]]+\]|\[ALERT:[^\]]+\])/g);
 
   return blocks.map((block, i) => {
-    if (block === "\\n\\n" || block === "\n\n") return <br key={i} />;
+    if (!block || block === "") return null;
+    
+    if (block === "\\n\\n" || block === "\n\n") {
+      return <div key={i} className="p-spacer" />;
+    }
 
     const tip = block.match(/^\[TIP: (.*)\]$/);
-    if (tip) return <div key={i} className="inline-tip">💡 {tip[1]}</div>;
+    if (tip) return <div key={i} className="inline-tip">💡 {formatInline(tip[1])}</div>;
 
     const warn = block.match(/^\[WARN: (.*)\]$/);
-    if (warn) return <div key={i} className="inline-warn">⚠️ {warn[1]}</div>;
+    if (warn) return <div key={i} className="inline-warn">⚠️ {formatInline(warn[1])}</div>;
 
     const alert = block.match(/^\[ALERT: (.*)\]$/);
-    if (alert) return <div key={i} className="inline-alert">🚨 {alert[1]}</div>;
+    if (alert) return <div key={i} className="inline-alert">🚨 {formatInline(alert[1])}</div>;
 
-    const inline = block.split(/(\*\*[^*]+\*\*)/g);
+    // For any other blocks, handle lists and standard lines
     return (
-      <p key={i}>
-        {inline.map((span, j) => {
-          const bold = span.match(/^\*\*(.*)\*\*$/);
-          if (bold) return <strong key={j}>{bold[1]}</strong>;
-          return span;
-        })}
-      </p>
+      <div key={i} className="answer-segment">
+        {formatComplexBlock(block)}
+      </div>
     );
   });
 }

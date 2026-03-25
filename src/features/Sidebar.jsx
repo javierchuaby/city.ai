@@ -14,7 +14,7 @@ import PointsWidget from "../components/ui/PointsWidget";
  * @param {Function} props.onNewChat - Reset conversation handler.
  * @param {Function} props.onDevToggle - Dev mode toggle handler.
  */
-export default function Sidebar({ user, category, setCategory, points, onNewChat, onDevToggle }) {
+export default function Sidebar({ user, category, setCategory, points, onNewChat, onDevToggle, onReset }) {
   const CATS = [
     { id: "all", icon: "⚡", label: "All Intel", count: "" }, 
     { id: "food", icon: "🍜", label: "Food & Hawkers", count: "1.2k" },
@@ -74,9 +74,24 @@ export default function Sidebar({ user, category, setCategory, points, onNewChat
             cursor: "pointer",
             textTransform: "uppercase",
             letterSpacing: "0.1em",
-            opacity: 0.5
+            opacity: 0.5,
+            marginBottom: "8px"
           }}>
           Open Sandbox 🛠️
+        </div>
+        <div 
+          onClick={onReset}
+          style={{ 
+            fontFamily: "var(--fm)", 
+            fontSize: "9px", 
+            color: "var(--red)", 
+            textAlign: "center", 
+            cursor: "pointer",
+            textTransform: "uppercase",
+            letterSpacing: "0.1em",
+            opacity: 0.6
+          }}>
+          End Session & Logout
         </div>
       </div>
     </div>

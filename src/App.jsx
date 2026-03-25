@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Landing from "./views/Landing";
 import Signup from "./views/Signup";
 import OnboardingFlow from "./features/OnboardingFlow";
@@ -15,18 +15,43 @@ import usePoints from "./hooks/usePoints";
  */
 export default function App() {
   // Navigation & High-level state
-  const [screen, setScreen] = useState("landing");
+  const [screen, setScreen] = useState(() => {
+    try {
+      return localStorage.getItem("cityai_screen") || "landing";
+    } catch (e) {
+      return "landing";
+    }
+  });
   const [category, setCategory] = useState("all");
   const [isDev, setIsDev] = useState(false);
-  const [user, setUser] = useState({ 
-    name: "", email: "", dob: "", region: "", 
-    travelStyle: "", interests: [], budget: "", context: "" 
+  const [user, setUser] = useState(() => {
+    try {
+      const saved = localStorage.getItem("cityai_user");
+      return saved ? JSON.parse(saved) : {
+        name: "", email: "", dob: "", region: "",
+        travelStyle: "", interests: [], budget: "", context: ""
+      };
+    } catch (e) {
+      return {
+        name: "", email: "", dob: "", region: "",
+        travelStyle: "", interests: [], budget: "", context: ""
+      };
+    }
   });
+
+  useEffect(() => {
+    localStorage.setItem("cityai_user", JSON.stringify(user));
+  }, [user]);
+
+  useEffect(() => {
+    localStorage.setItem("cityai_screen", screen);
+  }, [screen]);
+
   const [feedbackDismissed, setFeedbackDismissed] = useState({});
 
   // Logic separation into custom hooks
   const CATS = [
-    { id: "all", label: "All Intel" }, 
+    { id: "all", label: "All Intel" },
     { id: "food", label: "Food & Hawkers" },
     { id: "night", label: "Nightlife" }, 
     { id: "tips", label: "Local Tips" },
@@ -71,6 +96,12 @@ export default function App() {
     resetPoints();
   };
 
+  const handleReset = () => {
+    localStorage.removeItem("cityai_user");
+    localStorage.removeItem("cityai_screen");
+    window.location.reload(); // Hard reset
+  };
+
   const onDismissFeedback = (id) => {
     setFeedbackDismissed(prev => ({ ...prev, [id]: true }));
   };
@@ -91,6 +122,7 @@ export default function App() {
         points={points} 
         onNewChat={handleNewChat} 
         onDevToggle={() => setIsDev(true)}
+        onReset={handleReset}
       />
       <ChatContainer 
         user={user} 
