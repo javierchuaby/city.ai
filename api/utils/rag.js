@@ -44,7 +44,7 @@ export async function getRelevantIntel(message) {
 
     const { data: intel, error } = await supabase.rpc('match_intel', {
       query_embedding: embedding,
-      match_threshold: 0.2,
+      match_threshold: 0.5,
       match_count: 3
     });
 

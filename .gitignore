@@ -36,3 +36,13 @@ dist-ssr
 # Legacy prototype
 city-ai.html
 .vercel
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+venv/
+.env
+.venv
+env/
+requirements.txt.bak
