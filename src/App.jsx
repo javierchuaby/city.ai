@@ -34,7 +34,7 @@ export default function App() {
   
   const currentCatLabel = CATS.find(c => c.id === category)?.label || "All Intel";
   
-  const { messages, loading, input, setInput, sendMessage, resetMessages } = useChat(user, currentCatLabel);
+  const { messages, loading, loadingStep, input, setInput, sendMessage, resetMessages } = useChat(user, currentCatLabel);
 
   const handleNewChat = () => {
     resetMessages();
@@ -59,6 +59,7 @@ export default function App() {
       <ChatContainer 
         messages={messages} 
         loading={loading} 
+        loadingStep={loadingStep} 
         input={input} 
         setInput={setInput} 
         sendMessage={sendMessage} 

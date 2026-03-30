@@ -1,13 +1,34 @@
-import { genAI_Chat, getRelevantIntel } from "./utils/rag.js";
-import { SYSTEM_PROMPT } from "./utils/prompt.js";
-import { parseAIResponse } from "./utils/json.js";
+import { ChatService } from "./services/chatService.js";
+import { IntelService } from "./services/intelService.js";
+import { GeminiService } from "./services/geminiService.js";
+import { GoogleGenAI } from "@google/genai";
+import { createDatabaseClient } from "./utils/database.js";
+import { config, validateConfig } from "./config.js";
+import { RESPONSE_TYPES } from "../shared/constants.js";
 
 /**
  * api/chat.js
- * Vercel Serverless Function to handle AI orchestration with Gemini RAG and Supabase.
+ * Vercel Serverless Function to handle AI orchestration.
+ * Decoupled: Acts as the Composition Root for services.
  */
 
+// Initialize Infrastructure (Singletons for the handler instance)
+const db = createDatabaseClient(config.supabase);
+const aiClient = new GoogleGenAI({ apiKey: config.gemini.apiKey });
+
+// Initialize Services with Dependency Injection
+const intelService = new IntelService(aiClient, db);
+const geminiService = new GeminiService(aiClient);
+const chatService = new ChatService(intelService, geminiService);
+
 export default async function handler(req, res) {
+  try {
+    validateConfig();
+  } catch (err) {
+    console.error("[Config Error]", err.message);
+    return res.status(500).json({ error: "Server configuration error." });
+  }
+
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed' });
   }
@@ -18,72 +39,53 @@ export default async function handler(req, res) {
     return res.status(400).json({ error: 'Missing user message' });
   }
 
-  // Ensure AI_API_KEY is present
-  if (!process.env.AI_API_KEY) {
-    console.error("Missing AI_API_KEY in environment.");
-    return res.status(500).json({ error: 'AI_API_KEY is not configured on the server.' });
-  }
+  // Set headers for streaming status updates
+  res.setHeader('Content-Type', 'application/json'); 
+  res.setHeader('Transfer-Encoding', 'chunked');
+
+  const sendStatus = (status) => {
+    res.write(JSON.stringify({ type: RESPONSE_TYPES.STATUS, status }) + '\n');
+  };
 
   try {
-    // Step 1: Fetch relevant intel snippets (RAG)
-    const intelSnippets = await getRelevantIntel(message);
-    const categoryLabel = userProfile?.categoryLabel || "All Intel";
+    // Delegate full AI orchestration to chatService
+    const result = await chatService.processChat(
+      { message, userProfile, chatHistory },
+      (status) => sendStatus(status)
+    );
 
-    // Step 2: Call Gemini with augmented prompt
-    const model = genAI_Chat.getGenerativeModel({
-      model: "gemini-2.5-flash",
-      systemInstruction: SYSTEM_PROMPT(userProfile || {}, categoryLabel, intelSnippets),
-      generationConfig: {
-        responseMimeType: "application/json"
-      }
-    });
+    // Final response
+    res.write(JSON.stringify({
+      type: RESPONSE_TYPES.FINAL,
+      raw: result.raw,
+      parsed: result.parsed,
+      success: true,
+      meta: { model: result.model }
+    }) + '\n');
+    
+    res.end();
 
-    const chat = model.startChat({
-      history: (chatHistory || []).map(m => ({
-        role: m.role === "ai" ? "model" : "user",
-        parts: [{ text: m.content }]
-      }))
-    });
-
-    const result = await chat.sendMessage(message);
-    const rawContent = result.response.text();
-
-    // Step 3: Handle JSON parsing and structure validation
-    const safeParsed = parseAIResponse(rawContent);
-
-    // Post-process sources based on intel retrieval
-    if (intelSnippets.length > 0) {
-      if (!safeParsed.sources.some(s => s.label.includes("Reddit"))) {
-        safeParsed.sources.unshift({
-          platform: "Reddit",
-          label: "Reddit community intel",
-          age: "Verified Local Info",
-          color: "#ff4500"
-        });
-      }
-    } else {
-      // Fallback: If no intel found, remove accidental Reddit source hallucinations
-      safeParsed.sources = safeParsed.sources.filter(s => !s.label.includes("Reddit"));
-    }
-
-    return res.status(200).json({
-      raw: rawContent,
-      parsed: safeParsed,
-      success: true
-    });
   } catch (error) {
-    console.error("Backend AI Error:", error);
-    return res.status(500).json({
+    console.error("[Chat Handler] Critical Error:", error.message);
+
+    // Provide a fail-safe UI response even on total service failure
+    const errorResponse = {
+      type: RESPONSE_TYPES.FINAL,
       success: false,
-      error: "Unable to connect to AI service.",
+      error: "Our local intel sources are currently overloaded. Please try again in 30 seconds.",
       parsed: {
-        answer: "Sorry, I'm having trouble connecting to my local sources. How else can I help you explore Singapore?",
+        answer: "I'm having trouble accessing my database right now due to high demand. Let's try again in a moment, or ask me something simpler!",
+        general_knowledge_note: null,
         sources: [],
         trust: 0,
         freshness: "N/A",
         recommendations: [],
-        has_conflict: false
+        has_conflict: false,
+        citations: []
       }
-    });
+    };
+
+    res.write(JSON.stringify(errorResponse) + '\n');
+    res.end();
   }
 }

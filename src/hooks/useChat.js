@@ -12,6 +12,7 @@ import { getCityIntel } from "../services/aiService";
 export default function useChat(user, categoryLabel) {
   const [messages, setMessages] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [loadingStep, setLoadingStep] = useState(null);
   const [input, setInput] = useState("");
 
   const sendMessage = useCallback(async (textOverride) => {
@@ -20,12 +21,24 @@ export default function useChat(user, categoryLabel) {
 
     setInput("");
     setLoading(true);
+    setLoadingStep("Analyzing your search query...");
 
     const userMsg = { role: "user", content: text, id: Date.now() };
     setMessages(prev => [...prev, userMsg]);
 
+    const statusMap = {
+      embedding: "Analyzing your search query...",
+      matching: "Searching local intel sources...",
+      generating: "Synthesizing response..."
+    };
+
     try {
-      const result = await getCityIntel(text, { ...user, categoryLabel }, messages);
+      const result = await getCityIntel(
+        text, 
+        { ...user, categoryLabel }, 
+        messages, 
+        (status) => setLoadingStep(statusMap[status] || status)
+      );
       
       if (result.success) {
         setMessages(prev => [...prev, { 
@@ -50,10 +63,11 @@ export default function useChat(user, categoryLabel) {
       }]);
     } finally {
       setLoading(false);
+      setLoadingStep(null);
     }
   }, [input, loading, messages, user, categoryLabel]);
 
   const resetMessages = () => setMessages([]);
 
-  return { messages, loading, input, setInput, sendMessage, resetMessages };
+  return { messages, loading, loadingStep, input, setInput, sendMessage, resetMessages };
 }

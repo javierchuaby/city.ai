@@ -11,7 +11,7 @@ To provide travelers and residents with "the real local intelligence" — moving
 - **Database**: Supabase with `pgvector` for similarity search
 - **AI Models**: 
   - **Chat**: Google Gemini 2.5 Flash
-  - **Embeddings**: Google `gemini-embedding-001`
+  - **Embeddings**: Google `gemini-embedding-2-preview`
 - **RAG Pipeline**: Python-based scraper harvesting verified community intel from Reddit (r/singapore, r/asksingapore)
 - **Deployment**: Vercel Serverless Functions for AI orchestration
 
@@ -80,7 +80,7 @@ create extension if not exists vector;
 
 -- Create the chunks table
 create table if not exists intel_chunks (
-  id bigserial primary key,
+  id uuid primary key default gen_random_uuid(),
   content text not null,
   metadata jsonb,
   embedding vector(768)
@@ -96,7 +96,7 @@ create or replace function match_intel (
   match_count int
 )
 returns table (
-  id bigint,
+  id uuid,
   content text,
   metadata jsonb,
   similarity float

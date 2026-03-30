@@ -21,6 +21,7 @@ import ChatInput from "./chat/ChatInput";
 export default function ChatContainer({ 
   messages, 
   loading, 
+  loadingStep,
   input, 
   setInput, 
   sendMessage, 
@@ -73,7 +74,7 @@ export default function ChatContainer({
               <span className="ai-av-label">Thinking…</span>
             </div>
             <div className="loading-inner">
-              <div className="loading-step active">Scanning sources...</div>
+              <div className="loading-step active">{loadingStep || "Scanning sources..."}</div>
             </div>
           </div>
         )}
