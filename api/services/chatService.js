@@ -1,14 +1,17 @@
 /**
  * api/services/chatService.js
- * Orchestrates the full chat workflow: Intel retrieval (RAG) and Gemini AI generation.
+ * High-level orchestration for the full AI chat life-cycle.
+ * Decouples the HTTP layer (handlers) from the business domain logic.
  */
 
-import { CHAT_STATUS } from "../../shared/constants.js";
+import { CHAT_STATUS } from "../../src/shared/lib/constants.js";
+import { IntelService } from "./intelService.js";
+import { GeminiService } from "./geminiService.js";
 
 export class ChatService {
   /**
-   * @param {Object} intelService - Pre-initialized IntelService instance.
-   * @param {Object} geminiService - Pre-initialized GeminiService instance.
+   * @param {Object} intelService - Injected RAG/Intel service.
+   * @param {Object} geminiService - Injected AI/Gemini service.
    */
   constructor(intelService, geminiService) {
     this.intelService = intelService;
@@ -16,25 +19,22 @@ export class ChatService {
   }
 
   /**
-   * Main orchestration method.
-   * @param {object} params - { message, chatHistory, userProfile }
-   * @param {function} onStatus - Callback for real-time status updates (embedding, matching, generating).
-   * @returns {Promise<object>} - The final AI response result.
+   * Orchestrates the chat flow: Retrieval -> Generation.
+   * @param {Object} params - { message, chatHistory, userProfile }
+   * @param {function} onStatus - Status callback for progress reporting.
    */
   async processChat({ message, chatHistory, userProfile }, onStatus = () => {}) {
-    // Step 1 & 2: RAG (Retrieval-Augmented Generation)
+    // Stage 1 & 2: Retrieval-Augmented Generation (RAG)
     const intelSnippets = await this.intelService.getRelevantIntel(message, onStatus);
 
-    // Step 3: AI Generation
+    // Stage 3: AI Generation & Formatting
     onStatus(CHAT_STATUS.GENERATING);
 
-    const result = await this.geminiService.generateChatResponse({
+    return await this.geminiService.generateChatResponse({
       message,
       chatHistory,
       userProfile,
       intelSnippets
     });
-
-    return result;
   }
 }

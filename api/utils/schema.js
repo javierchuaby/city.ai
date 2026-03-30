@@ -7,6 +7,19 @@ import { zodToJsonSchema } from "zod-to-json-schema";
  * This ensures the model follows the exact JSON structure and includes citations.
  */
 
+export const chatRequestSchema = z.object({
+  message: z.string().min(1, "Message cannot be empty"),
+  userProfile: z.object({
+    id: z.any().optional(),
+    name: z.string().optional(),
+    categoryLabel: z.string().optional()
+  }).optional(),
+  chatHistory: z.array(z.object({
+    role: z.enum(["user", "ai", "model"]),
+    content: z.string()
+  })).optional().default([])
+});
+
 export const chatResponseSchema = z.object({
   answer: z.string().describe("Main answer body. Use \\n\\n for paragraph breaks. High empathy, witty, expert local tone."),
   general_knowledge_note: z
@@ -27,26 +40,42 @@ export const chatResponseSchema = z.object({
   freshness: z.string().describe("Indication of how current the info is, e.g., 'Recent Sentiment'"),
   has_conflict: z.boolean().describe("Whether there are conflicting community opinions reported."),
   conflict_note: z.string().optional().describe("Notes explaining the nature of the conflict if has_conflict is true."),
-  recommendations: z.array(z.object({
-    name: z.string().describe(
-      "Place or activity name. For hawker-centre questions: list hawker centres first (venue names), then optional stalls."
-    ),
-    location: z.string().describe("Location context, e.g., 'Maxwell', 'Near Orchard MRT'"),
-    snippet: z.string().describe("One-sentence pithy local tip. Max 60 characters."),
-    type: z.enum(["food", "activity", "stay", "travel"]).describe("Category for UI icon assignment."),
-    trust: z.number().int().min(0).max(100).describe("Trust score for this specific recommendation."),
-    age: z.string().describe("Longevity of this spot, e.g., 'Staple', 'New', 'Hidden Gem'")
-  })).describe(
+  recommendations: z.preprocess(
+    // Silently drop any items that are not plain objects (e.g. strings the model occasionally emits)
+    (val) => Array.isArray(val) ? val.filter(item => item !== null && typeof item === 'object' && !Array.isArray(item)) : val,
+    z.array(z.object({
+      name: z.string().describe(
+        "Place or activity name. For hawker-centre questions: list hawker centres first (venue names), then optional stalls."
+      ),
+      location: z.string().describe("Location context, e.g., 'Maxwell', 'Near Orchard MRT'"),
+      snippet: z.string().describe("One-sentence pithy local tip. Max 60 characters."),
+      type: z.enum(["food", "activity", "stay", "travel"]).describe("Category for UI icon assignment."),
+      trust: z.number().int().min(0).max(100).describe("Trust score for this specific recommendation."),
+      age: z.string().describe("Longevity of this spot, e.g., 'Staple', 'New', 'Hidden Gem'")
+    })).catch([])
+  ).describe(
     "Actionable picks. When the user asked for centres, order items with hawker centre venues before stall-only entries."
   ),
   ask_question: z.object({
     text: z.string().describe("Suggested follow-up question to keep the conversation going."),
     options: z.array(z.string()).describe("Short labels for quick-reply chips.")
   }).nullable().describe("Optional follow-up interaction or null if answer is final."),
-  citations: z.array(z.object({
-    source_id: z.string().describe("The ID of the snippet found in REDDIT_COMMUNITY_INTEL (e.g., 'Snippet 1')."),
-    url: z.string().describe("The exact URL associated with this snippet. MANDATORY: This URL must be a direct match from the provided snippets. NO HALLUCINATION.")
-  })).describe(
+  citations: z.preprocess(
+    // Coerce numeric indices to { source_id, url: '' } placeholders; drop plain strings.
+    // _postProcess in GeminiService resolves numbers to real URLs using intelSnippets.
+    (val) => {
+      if (!Array.isArray(val)) return val;
+      return val.map(item => {
+        if (typeof item === 'number') return { source_id: `Snippet ${item + 1}`, url: '' };
+        if (item !== null && typeof item === 'object' && !Array.isArray(item)) return item;
+        return null; // strings and other primitives are dropped
+      }).filter(Boolean);
+    },
+    z.array(z.object({
+      source_id: z.string().describe("The ID of the snippet found in REDDIT_COMMUNITY_INTEL (e.g., 'Snippet 1')."),
+      url: z.string().describe("The exact URL associated with this snippet. MANDATORY: This URL must be a direct match from the provided snippets. NO HALLUCINATION.")
+    })).catch([])
+  ).describe(
     "Snippet-backed claims only. Each entry must map to real REDDIT_COMMUNITY_INTEL snippets. Omit general-knowledge venue names (use general_knowledge_note + sources instead)."
   )
 });

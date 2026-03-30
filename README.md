@@ -157,20 +157,22 @@ The project is designed to be deployed on **Vercel**:
 ## 📂 Project Structure
 
 ```text
-├── api/                # Vercel Serverless Functions
-│   ├── chat.js         # AI Orchestration & RAG retrieval
-│   └── utils/          # RAG, JSON parsing & prompt logic
-├── scripts/            # RAG Pipeline Tools
-│   ├── scraper.py      # Reddit crawler & embedding injector
-│   └── requirements.txt
-├── src/
-│   ├── components/ui/  # Shared design system components
-│   ├── context/        # State context & providers
-│   ├── features/       # Complex UI modules (Chat, Sidebar)
-│   ├── hooks/          # Custom React hooks (useChat, useAppContext)
-│   ├── views/          # Full-page components (Landing, Onboarding)
-│   ├── App.jsx         # Main UI orchestration
-│   └── main.jsx        # Entry point
-├── vercel.json         # Vercel deployment config
-└── package.json        # Project dependencies
+├── api/                # Vercel Serverless Functions (Layered Architecture)
+│   ├── chat.js         # Entry point / Composition Root
+│   ├── clients/        # SDK clients (Gemini, Supabase)
+│   ├── config/         # Centralized configuration & Zod validation
+│   ├── repositories/    # Data access layer (Supabase)
+│   ├── services/       # Business logic (AI orchestration, RAG)
+│   └── utils/          # Schema, prompts & parsing logic
+├── scripts/            # Python RAG Pipeline
+│   ├── scraper/        # Reddit crawler implementation
+│   └── venv/           # Python Virtual Environment
+├── src/                # Front-end (Feature-Sliced Design)
+│   ├── app/            # Application layer (Entry point, Providers, Global styles)
+│   ├── pages/          # Full pages (Landing, Onboarding, etc.)
+│   ├── widgets/        # Complex UI blocks (ChatPanel, Sidebar)
+│   ├── entities/       # Business entities (User, Chat models/hooks)
+│   └── shared/         # Reusable helpers, UI components & constants
+├── vercel.json         # Vercel deployment configuration
+└── package.json        # Node.js dependencies & scripts
 ```

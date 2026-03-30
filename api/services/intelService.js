@@ -1,59 +1,53 @@
 /**
  * api/services/intelService.js
  * Manages RAG (Retrieval-Augmented Generation) and vector search logic.
- * Decoupled from direct Supabase calls through the database service layer.
+ * Orchestrates embedding generation and repository similarity search.
  */
 
-import { matchIntel, mapIntelToSnippet } from "../utils/database.js";
-import { CHAT_STATUS } from "../../shared/constants.js";
+
+import { CHAT_STATUS } from "../../src/shared/lib/constants.js";
+import { config } from "../config/index.js";
 
 export class IntelService {
   /**
-   * @param {Object} aiClient - The GoogleGenAI client instance.
-   * @param {Object} dbClient - The Supabase client instance.
+   * @param {Object} intelRepository - Injected repository for data access.
+   * @param {Object} aiClient - Injected generative AI client.
    */
-  constructor(aiClient, dbClient) {
+  constructor(intelRepository, aiClient) {
+    this.repo = intelRepository;
     this.ai = aiClient;
-    this.db = dbClient;
-    this.maxAttempts = 3;
+    this.maxAttempts = config.app.maxRetries || 3;
   }
 
   /**
-   * Retrieves relevant intel from Supabase using vector similarity search.
-   * @param {string} message - The user query to embed and search for.
-   * @param {function} onStatus - Callback for real-time status updates.
+   * Retrieves relevant intel chunks using embedding and repository match.
+   * @param {string} message - User query.
+   * @param {function} onStatus - Callback for status updates.
    */
-  async getRelevantIntel(message, onStatus = () => {}) {
-    if (!this.ai) {
-      console.warn("AI client missing - skipping RAG.");
-      return [];
-    }
-
+  async getRelevantIntel(message, onStatus = () => { }) {
     let attempts = 0;
 
     while (attempts < this.maxAttempts) {
       try {
         // Step 1: Embedding
         onStatus(CHAT_STATUS.EMBEDDING);
-        
-        const result = await this.ai.models.embedContent({
-          model: "gemini-embedding-2-preview",
-          contents: [message],
-          config: {
-            outputDimensionality: 768,
-            taskType: "RETRIEVAL_QUERY"
-          }
+
+        const model = this.ai.getGenerativeModel({ model: config.gemini.models.embedding });
+        const result = await model.embedContent({
+          content: { parts: [{ text: message }] },
+          taskType: "RETRIEVAL_QUERY",
+          outputDimensionality: 768
         });
 
-        let embedding = result.embeddings[0].values;
+        let embedding = result.embedding.values;
         embedding = this._normalizeL2(embedding);
 
         // Step 2: Matching
         onStatus(CHAT_STATUS.MATCHING);
 
-        const intel = await matchIntel(this.db, embedding, 0.5, 18);
+        const snippets = await this.repo.findSimilarIntel(embedding, 0.5, 18);
 
-        return (intel || []).map(mapIntelToSnippet);
+        return snippets;
       } catch (err) {
         attempts++;
         console.warn(`[IntelService] RAG attempt ${attempts}/${this.maxAttempts} failed:`, err.message);
@@ -63,14 +57,14 @@ export class IntelService {
           continue;
         }
 
-        console.warn("[IntelService] RAG Retrieval error (falling back to base knowledge):", err);
+        console.error("[IntelService] RAG Retrieval error (base knowledge fallback):", err);
         return [];
       }
     }
   }
 
   /**
-   * L2 normalization helper for 768d embeddings with 1e-12 epsilon.
+   * L2 normalization helper for 784d embeddings with 1e-12 epsilon.
    */
   _normalizeL2(vector) {
     const norm = Math.sqrt(vector.reduce((acc, val) => acc + val * val, 0));
@@ -78,17 +72,11 @@ export class IntelService {
     return vector.map(val => val / norm);
   }
 
-  /**
-   * Checks if an error is worth retrying.
-   */
   _isRetryable(err) {
     const msg = (err.message || "").toLowerCase();
     return msg.includes("503") || msg.includes("429") || msg.includes("disconnected") || msg.includes("overloaded");
   }
 
-  /**
-   * Exponential backoff.
-   */
   async _backoff(attempts) {
     const delay = Math.pow(2, attempts) * 1000;
     return new Promise(resolve => setTimeout(resolve, delay));
