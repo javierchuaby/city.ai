@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { ChatService } from '../chatService'
-import { CHAT_STATUS } from '../../../src/shared/lib/constants.js'
+import { CHAT_STATUS } from '../../../../src/shared/lib/constants.js'
 
 describe('ChatService', () => {
   let chatService

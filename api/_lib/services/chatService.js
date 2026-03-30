@@ -4,7 +4,7 @@
  * Decouples the HTTP layer (handlers) from the business domain logic.
  */
 
-import { CHAT_STATUS } from "../../src/shared/lib/constants.js";
+import { CHAT_STATUS } from "../../../src/shared/lib/constants.js";
 import { IntelService } from "./intelService.js";
 import { GeminiService } from "./geminiService.js";
 

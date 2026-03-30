@@ -4,13 +4,13 @@
  * Acts as the 'Composition Root' for the chat service ecosystem.
  */
 
-import { ChatService } from "./services/chatService.js";
-import { IntelService } from "./services/intelService.js";
-import { GeminiService } from "./services/geminiService.js";
-import { IntelRepository } from "./repositories/intelRepository.js";
-import { ai } from "./clients/gemini.js";
-import { supabase } from "./clients/supabase.js";
-import { chatRequestSchema } from "./utils/schema.js";
+import { ChatService } from "./_lib/services/chatService.js";
+import { IntelService } from "./_lib/services/intelService.js";
+import { GeminiService } from "./_lib/services/geminiService.js";
+import { IntelRepository } from "./_lib/repositories/intelRepository.js";
+import { ai } from "./_lib/clients/gemini.js";
+import { supabase } from "./_lib/clients/supabase.js";
+import { chatRequestSchema } from "./_lib/utils/schema.js";
 import { RESPONSE_TYPES } from "../src/shared/lib/constants.js";
 
 // Composition Root: Wire up the entire dependency tree.
