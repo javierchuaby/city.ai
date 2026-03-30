@@ -10,7 +10,7 @@ To provide travelers and residents with "the real local intelligence" — moving
 - **Build Tool**: Vite 8 (Native ESM)
 - **Database**: Supabase with `pgvector` for similarity search
 - **AI Models**: 
-  - **Chat**: Google Gemini 2.5 Flash / 2.0 Flash (Multi-model fallback)
+  - **Chat**: Google Gemini 2.5 Flash / 2.5 Flash Lite (Multi-model fallback)
   - **Embeddings**: Google `gemini-embedding-2-preview` (768d, L2 normalized)
 - **RAG Pipeline**: Python-based scraper harvesting verified community intel from Reddit (r/singapore, r/asksingapore)
 - **Deployment**: Vercel Serverless Functions (Consolidated Composition Root)

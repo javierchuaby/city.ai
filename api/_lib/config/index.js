@@ -52,7 +52,7 @@ function getRawConfig() {
       apiKey,
       models: {
         embedding: "gemini-embedding-2-preview",
-        chat: ["gemini-2.5-flash", "gemini-2.0-flash"]
+        chat: ["gemini-2.5-flash", "gemini-2.5-flash-lite"]
       }
     },
     app: {

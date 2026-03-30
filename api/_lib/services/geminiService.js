@@ -8,7 +8,7 @@ export class GeminiService {
    */
   constructor(aiClient) {
     this.ai = aiClient;
-    this.models = config.gemini.models.chat || ["gemini-2.5-flash", "gemini-2.0-flash"];
+    this.models = config.gemini.models.chat || ["gemini-2.5-flash", "gemini-2.5-flash-lite"];
     this.maxAttempts = config.app.maxRetries || 3;
   }
 
