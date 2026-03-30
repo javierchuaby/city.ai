@@ -54,3 +54,4 @@ docs/
 .cursorrules
 .agents/
 llms.txt
+.env*.local
