@@ -6,10 +6,6 @@
   "compatibility_flags": [
     "nodejs_compat"
   ],
-  "build": {
-    "command": "npm run build",
-    "watch_dir": "src"
-  },
   "vars": {
     "VITEST": "false"
   }
