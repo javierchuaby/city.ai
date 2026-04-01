@@ -23,6 +23,34 @@ const chatService = new ChatService(intelService, geminiService);
  * Cloudflare Pages HTTP Handler.
  * Supports streaming response using ReadableStream.
  */
+export async function onRequest(context) {
+  const { request } = context;
+
+  // Handle CORS Pre-flight (OPTIONS)
+  if (request.method === 'OPTIONS') {
+    return new Response(null, {
+      status: 200,
+      headers: {
+        'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow-Methods': 'POST, OPTIONS',
+        'Access-Control-Allow-Headers': 'Content-Type',
+      }
+    });
+  }
+
+  // Handle accidental browser visits (GET)
+  if (request.method === 'GET') {
+    return new Response("🤖 Singapore Intel API is online! Use the frontend to interact.", { status: 200 });
+  }
+
+  // Only proceed to the POST handler for actual chat requests
+  if (request.method === 'POST') {
+    return onRequestPost(context);
+  }
+
+  return new Response("Method not allowed", { status: 405 });
+}
+
 export async function onRequestPost({ request, env }) {
   // 1. Method Validation
   if (request.method !== 'POST') {
