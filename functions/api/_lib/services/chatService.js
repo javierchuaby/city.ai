@@ -23,7 +23,7 @@ export class ChatService {
    * @param {Object} params - { message, chatHistory, userProfile }
    * @param {function} onStatus - Status callback for progress reporting.
    */
-  async processChat({ message, chatHistory, userProfile }, onStatus = () => {}) {
+  async processChat({ message, chatHistory, userProfile }, onStatus = () => { }) {
     // Stage 1 & 2: Retrieval-Augmented Generation (RAG)
     const intelSnippets = await this.intelService.getRelevantIntel(message, onStatus);
 
