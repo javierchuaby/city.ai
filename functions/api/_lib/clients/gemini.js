@@ -5,17 +5,19 @@
  */
 
 import { GoogleGenerativeAI } from "@google/generative-ai";
-import { config } from "../config/index.js";
-
 /**
- * Singleton Google AI SDK Instance
+ * Factory function to create a new Gemini (Google Generative AI) Client.
+ * @param {object} config - Validated configuration object from getConfig()
  */
-export const ai = new GoogleGenerativeAI(config.gemini.apiKey);
+export const getGeminiClient = (config) => {
+  return new GoogleGenerativeAI(config.gemini.apiKey);
+};
 
 /**
- * Model registry helper to get specific model instances
+ * Helper to get a specific generative model.
+ * @param {object} aiClient - Instance and result from getGeminiClient()
  * @param {string} modelName - Optional model ID.
  */
-export const getModel = (modelName = config.gemini.models.chat[0]) => {
-  return ai.getGenerativeModel({ model: modelName });
+export const getModel = (aiClient, modelName = "gemini-2.5-flash") => {
+  return aiClient.getGenerativeModel({ model: modelName });
 };

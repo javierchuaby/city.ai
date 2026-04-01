@@ -5,11 +5,11 @@
  */
 
 import { createClient } from "@supabase/supabase-js";
-import { config } from "../config/index.js";
-
-const { url, serviceRoleKey } = config.supabase;
-
 /**
- * Singleton Supabase Client Instance (Service Role for admin/backend ops)
+ * Factory function to create a new Supabase client.
+ * @param {object} config - Validated configuration object from getConfig()
  */
-export const supabase = createClient(url, serviceRoleKey);
+export const getSupabaseClient = (config) => {
+  const { url, serviceRoleKey } = config.supabase;
+  return createClient(url, serviceRoleKey);
+};

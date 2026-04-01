@@ -1,12 +1,11 @@
 import { SYSTEM_PROMPT } from "../utils/prompt.js";
 import { getGeminiSchema, chatResponseSchema } from "../utils/schema.js";
-import { config } from "../config/index.js";
-
 export class GeminiService {
   /**
    * @param {Object} aiClient - Injected generative AI client.
+   * @param {Object} config - Injected configuration object.
    */
-  constructor(aiClient) {
+  constructor(aiClient, config) {
     this.ai = aiClient;
     this.models = config.gemini.models.chat || ["gemini-2.5-flash", "gemini-2.5-flash-lite"];
     this.maxAttempts = config.app.maxRetries || 3;

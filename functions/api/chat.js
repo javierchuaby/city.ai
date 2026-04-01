@@ -8,16 +8,11 @@ import { ChatService } from "./_lib/services/chatService.js";
 import { IntelService } from "./_lib/services/intelService.js";
 import { GeminiService } from "./_lib/services/geminiService.js";
 import { IntelRepository } from "./_lib/repositories/intelRepository.js";
-import { ai } from "./_lib/clients/gemini.js";
-import { supabase } from "./_lib/clients/supabase.js";
+import { getConfig } from "./_lib/config/index.js";
+import { getGeminiClient } from "./_lib/clients/gemini.js";
+import { getSupabaseClient } from "./_lib/clients/supabase.js";
 import { chatRequestSchema } from "./_lib/utils/schema.js";
 import { RESPONSE_TYPES } from "./_lib/shared/constants.js";
-
-// Composition Root (Singleton pattern for the request lifecycle)
-const intelRepo = new IntelRepository(supabase);
-const intelService = new IntelService(intelRepo, ai);
-const geminiService = new GeminiService(ai);
-const chatService = new ChatService(intelService, geminiService);
 
 /**
  * Cloudflare Pages HTTP Handler.
@@ -52,7 +47,17 @@ export async function onRequest(context) {
 }
 
 export async function onRequestPost({ request, env }) {
-  // 1. Method Validation
+  // 1. Composition Root (Initialized with Cloudflare bindings)
+  const config = getConfig(env);
+  const supabase = getSupabaseClient(config);
+  const ai = getGeminiClient(config);
+
+  const intelRepo = new IntelRepository(supabase);
+  const intelService = new IntelService(intelRepo, ai, config);
+  const geminiService = new GeminiService(ai, config);
+  const chatService = new ChatService(intelService, geminiService);
+
+  // 2. Method Validation
   if (request.method !== 'POST') {
     return new Response(JSON.stringify({ error: 'Method not allowed' }), { status: 405 });
   }

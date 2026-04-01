@@ -6,16 +6,16 @@
 
 
 import { CHAT_STATUS } from "../shared/constants.js";
-import { config } from "../config/index.js";
-
 export class IntelService {
   /**
    * @param {Object} intelRepository - Injected repository for data access.
    * @param {Object} aiClient - Injected generative AI client.
+   * @param {Object} config - Injected configuration object.
    */
-  constructor(intelRepository, aiClient) {
+  constructor(intelRepository, aiClient, config) {
     this.repo = intelRepository;
     this.ai = aiClient;
+    this.config = config;
     this.maxAttempts = config.app.maxRetries || 3;
   }
 
@@ -32,7 +32,7 @@ export class IntelService {
         // Step 1: Embedding
         onStatus(CHAT_STATUS.EMBEDDING);
 
-        const model = this.ai.getGenerativeModel({ model: config.gemini.models.embedding });
+        const model = this.ai.getGenerativeModel({ model: this.config.gemini.models.embedding });
         const result = await model.embedContent({
           content: { parts: [{ text: message }] },
           taskType: "RETRIEVAL_QUERY",

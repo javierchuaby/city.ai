@@ -12,19 +12,20 @@ const envSchema = z.object({
   AI_API_KEY: z.string().min(1).optional(),
 });
 
-function getRawConfig() {
+function getRawConfig(env = {}) {
   // During tests, we provide mock defaults to allow the system tree to initialize.
-  const isTest = process.env.VITEST === 'true';
+  const isTest = env.VITEST === 'true' || (typeof process !== 'undefined' && process.env.VITEST === 'true');
+  
   const source = isTest ? {
     SUPABASE_URL: "https://test.supabase.co",
     SUPABASE_SERVICE_ROLE_KEY: "test-key",
     GEMINI_API_KEY: "test-ai-key"
   } : {
-    SUPABASE_URL: process.env.SUPABASE_URL,
-    SUPABASE_SERVICE_ROLE_KEY: process.env.SUPABASE_SERVICE_ROLE_KEY,
-    GEMINI_API_KEY: process.env.GEMINI_API_KEY,
-    AI_API_KEY: process.env.AI_API_KEY,
-    VITEST: process.env.VITEST
+    SUPABASE_URL: env.SUPABASE_URL,
+    SUPABASE_SERVICE_ROLE_KEY: env.SUPABASE_SERVICE_ROLE_KEY,
+    GEMINI_API_KEY: env.GEMINI_API_KEY,
+    AI_API_KEY: env.AI_API_KEY,
+    VITEST: env.VITEST
   };
 
   const result = envSchema.safeParse(source);
@@ -61,12 +62,22 @@ function getRawConfig() {
   };
 }
 
-// Singleton config instance
-export const config = getRawConfig();
+/**
+ * Factory function to retrieve configuration using the provided environment object.
+ * @param {object} env - Cloudflare environment bindings
+ */
+export function getConfig(env) {
+  return getRawConfig(env);
+}
 
 /**
- * Compatibility export for validateConfig calls (now redundant due to getRawConfig)
+ * Compatibility export for validateConfig calls
  */
-export function validateConfig() {
-  return true;
+export function validateConfig(env) {
+  try {
+    getRawConfig(env);
+    return true;
+  } catch (e) {
+    return false;
+  }
 }
