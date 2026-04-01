@@ -11,7 +11,7 @@ import { IntelRepository } from "./_lib/repositories/intelRepository.js";
 import { ai } from "./_lib/clients/gemini.js";
 import { supabase } from "./_lib/clients/supabase.js";
 import { chatRequestSchema } from "./_lib/utils/schema.js";
-import { RESPONSE_TYPES } from "../../src/shared/lib/constants.js";
+import { RESPONSE_TYPES } from "./_lib/shared/constants.js";
 
 // Composition Root (Singleton pattern for the request lifecycle)
 const intelRepo = new IntelRepository(supabase);

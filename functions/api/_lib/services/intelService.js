@@ -5,7 +5,7 @@
  */
 
 
-import { CHAT_STATUS } from "../../../src/shared/lib/constants.js";
+import { CHAT_STATUS } from "../shared/constants.js";
 import { config } from "../config/index.js";
 
 export class IntelService {
