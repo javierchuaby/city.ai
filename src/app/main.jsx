@@ -1,4 +1,5 @@
-// Triggering a rebuild at 2026-04-02
+// Build Stamp: 2026-04-02_0930
+console.log('City AI build: 2026-04-02_0930');
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import './styles/index.css'

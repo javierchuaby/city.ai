@@ -13,3 +13,5 @@ export const RESPONSE_TYPES = {
   STATUS: "status",
   FINAL: "final"
 };
+
+export const BUILD_IDENTIFIER = "2026-04-02_0930";

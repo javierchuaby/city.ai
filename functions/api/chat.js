@@ -68,9 +68,9 @@ export async function onRequestPost({ request, env }) {
     const body = await request.json();
     const validation = chatRequestSchema.safeParse(body);
     if (!validation.success) {
-      return new Response(JSON.stringify({ 
-        error: 'Invalid request', 
-        details: validation.error.format() 
+      return new Response(JSON.stringify({
+        error: 'Invalid request',
+        details: validation.error.format()
       }), { status: 400 });
     }
 
@@ -107,7 +107,7 @@ export async function onRequestPost({ request, env }) {
           controller.close();
         } catch (error) {
           console.error("[Cloudflare Critical Error]", error.message);
-          
+
           const fallbackResponse = {
             type: RESPONSE_TYPES.FINAL,
             success: false,
@@ -123,7 +123,7 @@ export async function onRequestPost({ request, env }) {
               citations: []
             }
           };
-          
+
           sendChunk(fallbackResponse);
           controller.close();
         }
