@@ -13,7 +13,8 @@ To provide travelers and residents with "the real local intelligence" — moving
   - **Chat**: Google Gemini 2.5 Flash / 2.5 Flash Lite (Multi-model fallback)
   - **Embeddings**: Google `gemini-embedding-2-preview` (768d, L2 normalized)
 - **RAG Pipeline**: Python-based scraper harvesting verified community intel from Reddit (r/singapore, r/asksingapore)
-- **Deployment**: Vercel Serverless Functions (Consolidated Composition Root)
+- **Deployment**: Cloudflare Pages (Functions + Static Hosting)
+- **Networking**: Cloudflare Tunnel (Secure origin-to-edge connectivity)
 
 ## ✨ Key Features
 - **Reddit Community Intel**: Aggregates signals and "hidden gem" tips from verified local subreddits.
@@ -44,16 +45,17 @@ To provide travelers and residents with "the real local intelligence" — moving
    ```bash
    npm install
    ```
+   *Required:* Install `cloudflared` for the tunnel demonstration: `brew install cloudflared`.
 
 3. **Environment Configuration:**
-   Create a `.env` file in the root directory (use `.env.example` as a template). For the backend to function, ensure `GEMINI_API_KEY` (or `AI_API_KEY`) and Supabase credentials are set.
+   Create a `.env` file in the root using `.env.example`. Ensure `GEMINI_API_KEY` and Supabase credentials are set.
 
-4. **Run the Development Server:**
-   To use the AI features (serverless functions), you **must** run the project via the Vercel CLI to proxy the local API:
+4. **Run the Full-Stack Tunnel Environment:**
+   For a complete demonstration of the Cloudflare stack (Frontend + Edge Functions + Tunnel):
    ```bash
-   vercel dev
+   npm run dev:all
    ```
-   The app will typically be available at `http://localhost:3000`.
+   *Access the app via the `trycloudflare.com` URL generated in your console.*
 
 ---
 
@@ -142,20 +144,20 @@ npm run scraper
 
 ## 🚀 Deployment
 
-The project is designed to be deployed on **Vercel** with a consolidated serverless architecture:
+The project is natively optimized for **Cloudflare Pages**:
 
-1. **Link your project**: `vercel link`
-2. **Configure variables**: Add `GEMINI_API_KEY` (or `AI_API_KEY`), `SUPABASE_URL`, and `SUPABASE_SERVICE_ROLE_KEY` to your Vercel Dashboard.
-3. **Sync local env (optional)**: `vercel env pull .env`
-4. **Deploy to production**: `vercel --prod`
+1. **Link your project**: Log in to the Cloudflare Dashboard and connect your repository.
+2. **Configure variables**: Add `GEMINI_API_KEY`, `SUPABASE_URL`, and `SUPABASE_SERVICE_ROLE_KEY` to the **Pages > Settings > Variables** section.
+3. **Deploy to production**: Push your changes to the `main` branch or use `wrangler pages deploy`.
 
 ---
 
 ## 📂 Project Structure
 
 ```text
-├── api/                  # Vercel Serverless Functions (Layered Architecture)
-│   ├── _lib/             # Internal logic (not exposed as endpoints)
+├── functions/            # Cloudflare Pages Functions (Edge Runtime)
+│   ├── api/              # AI Backend Architecture
+│   │   ├── _lib/         # Internal logic (not exposed as endpoints)
 │   │   ├── clients/      # SDK clients (Gemini, Supabase)
 │   │   ├── config/       # Centralized configuration & Zod validation
 │   │   ├── repositories/ # Data access layer (Supabase)

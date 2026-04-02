@@ -16,6 +16,9 @@ export default defineConfig({
       '@shared': path.resolve(__dirname, './src/shared'),
     }
   },
+  server: {
+    allowedHosts: [".trycloudflare.com"]
+  },
   test: {
     globals: true,
     environment: 'jsdom',

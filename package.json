@@ -5,9 +5,12 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
+    "dev:local": "wrangler pages dev --proxy 5173 2>&1 | tee -a wrangler.log",
+    "dev:all": "concurrently \"npm run dev\" \"npm run dev:local\" \"npm run tunnel:quick\" --names \"VITE,WRANGLER,TUNNEL\" --prefix-colors \"blue,cyan,magenta\"",
     "build": "vite build",
     "lint": "eslint .",
     "preview": "npm run build && wrangler dev",
+    "tunnel:quick": "cloudflared tunnel --url http://localhost:8788 2>&1 | tee -a tunnel.log",
     "test": "vitest run",
     "scraper": "scripts/venv/bin/python scripts/scraper/main.py",
     "deploy": "npm run build && wrangler deploy"
@@ -29,6 +32,7 @@
     "@types/react": "^19.2.14",
     "@types/react-dom": "^19.2.3",
     "@vitejs/plugin-react": "^6.0.1",
+    "concurrently": "^9.2.1",
     "eslint": "^9.39.4",
     "eslint-plugin-react-hooks": "^7.0.1",
     "eslint-plugin-react-refresh": "^0.5.2",
