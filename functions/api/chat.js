@@ -2,6 +2,7 @@
  * functions/api/chat.js
  * Cloudflare Pages Function entry point for the AI orchestration backend.
  * Adapts the Node.js/Vercel style handler to Cloudflare's Web-Standard (V8) runtime.
+ * Last Modified: 2026-04-02 (Triggering rebuild)
  */
 
 import { ChatService } from "./_lib/services/chatService.js";
